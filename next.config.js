@@ -1,13 +1,6 @@
-```javascript
-/** @type {import('next').NextConfig} */
-const nextConfig = {
+module.exports = {
   reactStrictMode: true,
-  // Configuración para Render
-  output: 'standalone',
   images: {
     domains: ['scontent.xx.fbcdn.net', 'scontent.cdninstagram.com'],
   },
 }
-
-module.exports = nextConfig
-```
