@@ -1,6 +1,4 @@
-```javascript
 export default async function handler(req, res) {
-  // Configurar CORS para permitir requests desde tu dominio
   res.setHeader('Access-Control-Allow-Credentials', true);
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS');
@@ -20,21 +18,17 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Limpiar el Account ID (remover "act_" si existe)
     const cleanAccountId = accountId.replace(/^act_/i, '');
     
-    // Configurar rango de fechas
     const timeRange = JSON.stringify({
       since: '2024-12-01',
       until: '2025-01-13'
     });
     
-    // Construir URL de Meta API
     const url = `https://graph.facebook.com/v21.0/act_${cleanAccountId}/insights?fields=reach,impressions,cpc,spend,clicks,ctr,ad_id,ad_name,date_start,date_stop&level=ad&time_range=${encodeURIComponent(timeRange)}&access_token=${token}`;
     
     console.log('Fetching Meta Ads data...');
     
-    // Llamar a Meta API (desde el servidor, sin CORS)
     const response = await fetch(url);
     const data = await response.json();
     
@@ -55,7 +49,6 @@ export default async function handler(req, res) {
     
     console.log(`Found ${data.data.length} ads`);
     
-    // Obtener imágenes de cada anuncio
     const adsWithImages = await Promise.all(
       data.data.map(async (ad) => {
         try {
@@ -87,4 +80,3 @@ export default async function handler(req, res) {
     });
   }
 }
-```
