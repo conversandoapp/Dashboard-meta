@@ -21,7 +21,7 @@ export default async function handler(req, res) {
     const cleanAccountId = accountId.replace(/^act_/i, '');
     
     const timeRange = JSON.stringify({
-      since: '2023-11-01',
+      since: '2023-01-01',
       until: '2025-01-13'
     });
     
