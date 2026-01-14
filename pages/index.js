@@ -1,4 +1,3 @@
-```javascript
 import React, { useState, useEffect } from 'react';
 
 export default function MetaAdsDashboard() {
@@ -19,7 +18,6 @@ export default function MetaAdsDashboard() {
     setError(null);
 
     try {
-      // Llamar a nuestro backend (API route)
       const response = await fetch(
         `/api/meta-ads?token=${encodeURIComponent(metaToken)}&accountId=${encodeURIComponent(adAccountId)}`
       );
@@ -39,7 +37,6 @@ export default function MetaAdsDashboard() {
       setMetaData(data.data);
       setLoading(false);
       
-      // Guardar credenciales en localStorage para no tener que ingresarlas cada vez
       if (typeof window !== 'undefined') {
         localStorage.setItem('meta_token', metaToken);
         localStorage.setItem('ad_account_id', adAccountId);
@@ -52,7 +49,6 @@ export default function MetaAdsDashboard() {
     }
   };
 
-  // Cargar credenciales guardadas al iniciar
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const savedToken = localStorage.getItem('meta_token');
@@ -66,7 +62,6 @@ export default function MetaAdsDashboard() {
     }
   }, []);
 
-  // Cargar datos automáticamente si ya está configurado
   useEffect(() => {
     if (isConfigured && metaToken && adAccountId) {
       fetchMetaAdsData();
@@ -102,13 +97,13 @@ export default function MetaAdsDashboard() {
 
   if (!isConfigured) {
     return (
-      
-        
-          🎯 Dashboard Meta Ads
-          Configura tus credenciales para comenzar
+      <div style={styles.container}>
+        <div style={styles.configCard}>
+          <h1 style={styles.title}>Dashboard Meta Ads</h1>
+          <p style={styles.subtitle}>Configura tus credenciales para comenzar</p>
           
-          
-            Meta Access Token
+          <div style={styles.formGroup}>
+            <label style={styles.label}>Meta Access Token</label>
             <input
               type="password"
               value={metaToken}
@@ -116,13 +111,13 @@ export default function MetaAdsDashboard() {
               placeholder="EAABwzLixnjY..."
               style={styles.input}
             />
-            
+            <p style={styles.hint}>
               Obtenlo en: developers.facebook.com/tools/explorer/
-            
+            </p>
+          </div>
           
-          
-          
-            Ad Account ID
+          <div style={styles.formGroup}>
+            <label style={styles.label}>Ad Account ID</label>
             <input
               type="text"
               value={adAccountId}
@@ -130,131 +125,128 @@ export default function MetaAdsDashboard() {
               placeholder="123456789"
               style={styles.input}
             />
-            
-              Encuéntralo en Meta Business Suite → Configuración
-            
-          
+            <p style={styles.hint}>
+              Encuéntralo en Meta Business Suite
+            </p>
+          </div>
 
           <button
             onClick={() => setIsConfigured(true)}
             style={styles.button}
           >
             Conectar Dashboard
-          
+          </button>
 
-          
-            📝 Instrucciones rápidas:
-            
-              Ve a developers.facebook.com/tools/explorer/
-              Selecciona tu app y permisos: ads_read, ads_management
-              Genera el token y cópialo
-              Obtén tu Account ID en business.facebook.com
-            
-          
-        
-      
+          <div style={styles.infoBox}>
+            <h3 style={styles.infoTitle}>Instrucciones:</h3>
+            <ol style={styles.list}>
+              <li>Ve a developers.facebook.com/tools/explorer/</li>
+              <li>Selecciona tu app y permisos: ads_read, ads_management</li>
+              <li>Genera el token y cópialo</li>
+              <li>Obtén tu Account ID en business.facebook.com</li>
+            </ol>
+          </div>
+        </div>
+      </div>
     );
   }
 
   return (
-    
-      
-        
-          📊 Dashboard Meta Ads
-          Monitoreo en tiempo real
-        
-        
-          
-            {loading ? '⏳' : '🔄'} Actualizar
-          
-          
-            🚪 Salir
-          
-        
-      
+    <div style={styles.container}>
+      <div style={styles.header}>
+        <div>
+          <h1 style={styles.dashboardTitle}>Dashboard Meta Ads</h1>
+          <p style={styles.dashboardSubtitle}>Monitoreo en tiempo real</p>
+        </div>
+        <div style={{ display: 'flex', gap: '12px' }}>
+          <button onClick={fetchMetaAdsData} disabled={loading} style={styles.refreshButton}>
+            {loading ? 'Cargando...' : 'Actualizar'}
+          </button>
+          <button onClick={handleLogout} style={styles.logoutButton}>
+            Salir
+          </button>
+        </div>
+      </div>
 
       {error && (
-        
-          ⚠️ {error}
-        
+        <div style={styles.errorBox}>
+          <p>{error}</p>
+        </div>
       )}
 
       {loading ? (
-        
-          ⏳ Cargando datos de Meta Ads...
-        
+        <div style={styles.loadingBox}>
+          <p style={styles.loadingText}>Cargando datos de Meta Ads...</p>
+        </div>
       ) : totals ? (
         <>
-          {/* KPIs */}
-          
-            
-              Alcance Total
-              {totals.reach.toLocaleString()}
-              Usuarios únicos
-            
-            
-              Impresiones
-              {totals.impressions.toLocaleString()}
-              Veces mostrado
-            
-            
-              CPC Promedio
-              ${totals.avgCPC}
-              Costo por clic
-            
-            
-              Inversión Total
-              ${totals.spend.toFixed(2)}
-              Gasto total
-            
-          
+          <div style={styles.kpiGrid}>
+            <div style={styles.kpiCard}>
+              <h3 style={styles.kpiLabel}>Alcance Total</h3>
+              <p style={styles.kpiValue}>{totals.reach.toLocaleString()}</p>
+              <p style={styles.kpiHint}>Usuarios únicos</p>
+            </div>
+            <div style={styles.kpiCard}>
+              <h3 style={styles.kpiLabel}>Impresiones</h3>
+              <p style={styles.kpiValue}>{totals.impressions.toLocaleString()}</p>
+              <p style={styles.kpiHint}>Veces mostrado</p>
+            </div>
+            <div style={styles.kpiCard}>
+              <h3 style={styles.kpiLabel}>CPC Promedio</h3>
+              <p style={styles.kpiValue}>${totals.avgCPC}</p>
+              <p style={styles.kpiHint}>Costo por clic</p>
+            </div>
+            <div style={styles.kpiCard}>
+              <h3 style={styles.kpiLabel}>Inversión Total</h3>
+              <p style={styles.kpiValue}>${totals.spend.toFixed(2)}</p>
+              <p style={styles.kpiHint}>Gasto total</p>
+            </div>
+          </div>
 
-          {/* Anuncios */}
-          
+          <div style={styles.adsGrid}>
             {metaData.map((ad, index) => (
-              
+              <div key={index} style={styles.adCard}>
                 {ad.image_url ? (
-                  
+                  <img src={ad.image_url} alt={ad.ad_name} style={styles.adImage} />
                 ) : (
-                  🖼️
+                  <div style={styles.adImagePlaceholder}>Sin imagen</div>
                 )}
-                
-                  {ad.ad_name}
-                  
-                    
-                      Alcance:
-                      {parseInt(ad.reach || 0).toLocaleString()}
-                    
-                    
-                      Impresiones:
-                      {parseInt(ad.impressions || 0).toLocaleString()}
-                    
-                    
-                      CPC:
-                      ${parseFloat(ad.cpc || 0).toFixed(2)}
-                    
-                    
-                      Clics:
-                      {parseInt(ad.clicks || 0).toLocaleString()}
-                    
-                    
-                      Gasto:
-                      
+                <div style={styles.adContent}>
+                  <h3 style={styles.adTitle}>{ad.ad_name}</h3>
+                  <div style={styles.adStats}>
+                    <div style={styles.adStat}>
+                      <span style={styles.adStatLabel}>Alcance:</span>
+                      <span style={styles.adStatValue}>{parseInt(ad.reach || 0).toLocaleString()}</span>
+                    </div>
+                    <div style={styles.adStat}>
+                      <span style={styles.adStatLabel}>Impresiones:</span>
+                      <span style={styles.adStatValue}>{parseInt(ad.impressions || 0).toLocaleString()}</span>
+                    </div>
+                    <div style={styles.adStat}>
+                      <span style={styles.adStatLabel}>CPC:</span>
+                      <span style={styles.adStatValue}>${parseFloat(ad.cpc || 0).toFixed(2)}</span>
+                    </div>
+                    <div style={styles.adStat}>
+                      <span style={styles.adStatLabel}>Clics:</span>
+                      <span style={styles.adStatValue}>{parseInt(ad.clicks || 0).toLocaleString()}</span>
+                    </div>
+                    <div style={styles.adStat}>
+                      <span style={styles.adStatLabel}>Gasto:</span>
+                      <span style={{ ...styles.adStatValue, color: '#dc2626' }}>
                         ${parseFloat(ad.spend || 0).toFixed(2)}
-                      
-                    
-                  
-                
-              
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
             ))}
-          
+          </div>
         </>
       ) : null}
-    
+    </div>
   );
 }
 
-// Estilos inline
 const styles = {
   container: {
     minHeight: '100vh',
@@ -443,7 +435,8 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    fontSize: '48px',
+    fontSize: '14px',
+    color: '#6b7280',
   },
   adContent: {
     padding: '16px',
@@ -472,4 +465,3 @@ const styles = {
     color: '#1f2937',
   },
 };
-```
