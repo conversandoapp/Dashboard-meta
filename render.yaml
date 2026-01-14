@@ -1,0 +1,15 @@
+```yaml
+services:
+  - type: web
+    name: meta-ads-dashboard
+    env: node
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_VERSION
+        value: 18.17.0
+      - key: NEXT_PUBLIC_META_TOKEN
+        sync: false
+      - key: NEXT_PUBLIC_AD_ACCOUNT_ID
+        sync: false
+```
