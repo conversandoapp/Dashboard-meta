@@ -29,7 +29,7 @@ export default function MetaAdsDashboard() {
       }
       
       if (!data.data || data.data.length === 0) {
-        setError('No se encontraron anuncios. Verifica tu Account ID y que tengas campañas activas.');
+        setError(data.message || 'No se encontraron anuncios. Verifica tu Account ID y que tengas campañas.');
         setLoading(false);
         return;
       }
@@ -95,11 +95,40 @@ export default function MetaAdsDashboard() {
     setAdAccountId('');
   };
 
+  const getStatusColor = (status) => {
+    switch(status) {
+      case 'ACTIVE':
+        return '#10b981';
+      case 'PAUSED':
+        return '#f59e0b';
+      case 'DELETED':
+      case 'ARCHIVED':
+        return '#ef4444';
+      default:
+        return '#6b7280';
+    }
+  };
+
+  const getStatusText = (status) => {
+    switch(status) {
+      case 'ACTIVE':
+        return 'ACTIVO';
+      case 'PAUSED':
+        return 'PAUSADO';
+      case 'DELETED':
+        return 'ELIMINADO';
+      case 'ARCHIVED':
+        return 'ARCHIVADO';
+      default:
+        return status || 'DESCONOCIDO';
+    }
+  };
+
   if (!isConfigured) {
     return (
       <div style={styles.container}>
         <div style={styles.configCard}>
-          <h1 style={styles.title}>Dashboard Meta Ads</h1>
+          <h1 style={styles.title}>🎯 Dashboard Meta Ads</h1>
           <p style={styles.subtitle}>Configura tus credenciales para comenzar</p>
           
           <div style={styles.formGroup}>
@@ -126,7 +155,7 @@ export default function MetaAdsDashboard() {
               style={styles.input}
             />
             <p style={styles.hint}>
-              Encuéntralo en Meta Business Suite
+              Encuéntralo en Meta Business Suite → Configuración
             </p>
           </div>
 
@@ -138,7 +167,7 @@ export default function MetaAdsDashboard() {
           </button>
 
           <div style={styles.infoBox}>
-            <h3 style={styles.infoTitle}>Instrucciones:</h3>
+            <h3 style={styles.infoTitle}>📝 Instrucciones rápidas:</h3>
             <ol style={styles.list}>
               <li>Ve a developers.facebook.com/tools/explorer/</li>
               <li>Selecciona tu app y permisos: ads_read, ads_management</li>
@@ -155,87 +184,140 @@ export default function MetaAdsDashboard() {
     <div style={styles.container}>
       <div style={styles.header}>
         <div>
-          <h1 style={styles.dashboardTitle}>Dashboard Meta Ads</h1>
-          <p style={styles.dashboardSubtitle}>Monitoreo en tiempo real</p>
+          <h1 style={styles.dashboardTitle}>📊 Dashboard Meta Ads</h1>
+          <p style={styles.dashboardSubtitle}>Monitoreo completo de campañas (activas e inactivas)</p>
         </div>
         <div style={{ display: 'flex', gap: '12px' }}>
           <button onClick={fetchMetaAdsData} disabled={loading} style={styles.refreshButton}>
-            {loading ? 'Cargando...' : 'Actualizar'}
+            {loading ? '⏳ Cargando...' : '🔄 Actualizar'}
           </button>
           <button onClick={handleLogout} style={styles.logoutButton}>
-            Salir
+            🚪 Salir
           </button>
         </div>
       </div>
 
       {error && (
         <div style={styles.errorBox}>
-          <p>{error}</p>
+          <p>⚠️ {error}</p>
         </div>
       )}
 
       {loading ? (
         <div style={styles.loadingBox}>
-          <p style={styles.loadingText}>Cargando datos de Meta Ads...</p>
+          <div style={styles.spinner}></div>
+          <p style={styles.loadingText}>⏳ Cargando datos de Meta Ads...</p>
+          <p style={styles.loadingHint}>Esto puede tomar unos segundos...</p>
         </div>
       ) : totals ? (
         <>
+          {/* KPIs */}
           <div style={styles.kpiGrid}>
             <div style={styles.kpiCard}>
+              <div style={styles.kpiIcon}>👥</div>
               <h3 style={styles.kpiLabel}>Alcance Total</h3>
               <p style={styles.kpiValue}>{totals.reach.toLocaleString()}</p>
-              <p style={styles.kpiHint}>Usuarios únicos</p>
+              <p style={styles.kpiHint}>Usuarios únicos alcanzados</p>
             </div>
             <div style={styles.kpiCard}>
+              <div style={styles.kpiIcon}>👁️</div>
               <h3 style={styles.kpiLabel}>Impresiones</h3>
               <p style={styles.kpiValue}>{totals.impressions.toLocaleString()}</p>
-              <p style={styles.kpiHint}>Veces mostrado</p>
+              <p style={styles.kpiHint}>Total de veces mostrado</p>
             </div>
             <div style={styles.kpiCard}>
+              <div style={styles.kpiIcon}>💰</div>
               <h3 style={styles.kpiLabel}>CPC Promedio</h3>
               <p style={styles.kpiValue}>${totals.avgCPC}</p>
-              <p style={styles.kpiHint}>Costo por clic</p>
+              <p style={styles.kpiHint}>Costo promedio por clic</p>
             </div>
             <div style={styles.kpiCard}>
+              <div style={styles.kpiIcon}>💸</div>
               <h3 style={styles.kpiLabel}>Inversión Total</h3>
               <p style={styles.kpiValue}>${totals.spend.toFixed(2)}</p>
-              <p style={styles.kpiHint}>Gasto total</p>
+              <p style={styles.kpiHint}>Gasto total del periodo</p>
             </div>
           </div>
 
+          {/* Contador de anuncios */}
+          <div style={styles.statsBar}>
+            <div style={styles.statsItem}>
+              <span style={styles.statsLabel}>Total de anuncios:</span>
+              <span style={styles.statsValue}>{metaData.length}</span>
+            </div>
+            <div style={styles.statsItem}>
+              <span style={styles.statsLabel}>Activos:</span>
+              <span style={{ ...styles.statsValue, color: '#10b981' }}>
+                {metaData.filter(ad => ad.effective_status === 'ACTIVE').length}
+              </span>
+            </div>
+            <div style={styles.statsItem}>
+              <span style={styles.statsLabel}>Pausados:</span>
+              <span style={{ ...styles.statsValue, color: '#f59e0b' }}>
+                {metaData.filter(ad => ad.effective_status === 'PAUSED').length}
+              </span>
+            </div>
+            <div style={styles.statsItem}>
+              <span style={styles.statsLabel}>Otros:</span>
+              <span style={{ ...styles.statsValue, color: '#6b7280' }}>
+                {metaData.filter(ad => ad.effective_status !== 'ACTIVE' && ad.effective_status !== 'PAUSED').length}
+              </span>
+            </div>
+          </div>
+
+          {/* Anuncios */}
           <div style={styles.adsGrid}>
             {metaData.map((ad, index) => (
               <div key={index} style={styles.adCard}>
                 {ad.image_url ? (
                   <img src={ad.image_url} alt={ad.ad_name} style={styles.adImage} />
                 ) : (
-                  <div style={styles.adImagePlaceholder}>Sin imagen</div>
+                  <div style={styles.adImagePlaceholder}>
+                    <div style={styles.placeholderIcon}>🖼️</div>
+                    <div style={styles.placeholderText}>Sin imagen disponible</div>
+                  </div>
                 )}
                 <div style={styles.adContent}>
-                  <h3 style={styles.adTitle}>{ad.ad_name}</h3>
+                  <div style={styles.adHeader}>
+                    <h3 style={styles.adTitle}>{ad.ad_name}</h3>
+                    {(ad.effective_status || ad.status) && (
+                      <span style={{
+                        ...styles.statusBadge,
+                        backgroundColor: getStatusColor(ad.effective_status || ad.status),
+                      }}>
+                        {getStatusText(ad.effective_status || ad.status)}
+                      </span>
+                    )}
+                  </div>
                   <div style={styles.adStats}>
                     <div style={styles.adStat}>
-                      <span style={styles.adStatLabel}>Alcance:</span>
+                      <span style={styles.adStatLabel}>👥 Alcance:</span>
                       <span style={styles.adStatValue}>{parseInt(ad.reach || 0).toLocaleString()}</span>
                     </div>
                     <div style={styles.adStat}>
-                      <span style={styles.adStatLabel}>Impresiones:</span>
+                      <span style={styles.adStatLabel}>👁️ Impresiones:</span>
                       <span style={styles.adStatValue}>{parseInt(ad.impressions || 0).toLocaleString()}</span>
                     </div>
                     <div style={styles.adStat}>
-                      <span style={styles.adStatLabel}>CPC:</span>
+                      <span style={styles.adStatLabel}>💰 CPC:</span>
                       <span style={styles.adStatValue}>${parseFloat(ad.cpc || 0).toFixed(2)}</span>
                     </div>
                     <div style={styles.adStat}>
-                      <span style={styles.adStatLabel}>Clics:</span>
+                      <span style={styles.adStatLabel}>🖱️ Clics:</span>
                       <span style={styles.adStatValue}>{parseInt(ad.clicks || 0).toLocaleString()}</span>
                     </div>
                     <div style={styles.adStat}>
-                      <span style={styles.adStatLabel}>Gasto:</span>
-                      <span style={{ ...styles.adStatValue, color: '#dc2626' }}>
+                      <span style={styles.adStatLabel}>💸 Gasto:</span>
+                      <span style={{ ...styles.adStatValue, color: '#dc2626', fontWeight: 'bold' }}>
                         ${parseFloat(ad.spend || 0).toFixed(2)}
                       </span>
                     </div>
+                    {ad.ctr && (
+                      <div style={styles.adStat}>
+                        <span style={styles.adStatLabel}>📊 CTR:</span>
+                        <span style={styles.adStatValue}>{parseFloat(ad.ctr || 0).toFixed(2)}%</span>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -250,19 +332,19 @@ export default function MetaAdsDashboard() {
 const styles = {
   container: {
     minHeight: '100vh',
-    background: 'linear-gradient(to bottom right, #eff6ff, #e0e7ff)',
+    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
     padding: '24px',
   },
   configCard: {
     maxWidth: '600px',
-    margin: '0 auto',
+    margin: '60px auto',
     background: 'white',
-    borderRadius: '12px',
-    boxShadow: '0 10px 30px rgba(0,0,0,0.1)',
-    padding: '40px',
+    borderRadius: '16px',
+    boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+    padding: '48px',
   },
   title: {
-    fontSize: '32px',
+    fontSize: '36px',
     fontWeight: 'bold',
     color: '#1f2937',
     marginBottom: '8px',
@@ -271,73 +353,79 @@ const styles = {
   subtitle: {
     color: '#6b7280',
     textAlign: 'center',
-    marginBottom: '32px',
+    marginBottom: '40px',
+    fontSize: '16px',
   },
   formGroup: {
-    marginBottom: '24px',
+    marginBottom: '28px',
   },
   label: {
     display: 'block',
     fontSize: '14px',
-    fontWeight: '500',
+    fontWeight: '600',
     color: '#374151',
     marginBottom: '8px',
   },
   input: {
     width: '100%',
-    padding: '12px 16px',
-    border: '1px solid #d1d5db',
+    padding: '14px 16px',
+    border: '2px solid #e5e7eb',
     borderRadius: '8px',
     fontSize: '14px',
     boxSizing: 'border-box',
+    transition: 'border-color 0.3s',
   },
   hint: {
     fontSize: '12px',
     color: '#6b7280',
-    marginTop: '4px',
+    marginTop: '6px',
   },
   button: {
     width: '100%',
-    background: '#2563eb',
+    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
     color: 'white',
-    padding: '14px',
+    padding: '16px',
     borderRadius: '8px',
     border: 'none',
     fontSize: '16px',
-    fontWeight: '500',
+    fontWeight: '600',
     cursor: 'pointer',
-    marginBottom: '24px',
+    marginBottom: '28px',
+    transition: 'transform 0.2s',
   },
   infoBox: {
     background: '#fef3c7',
-    border: '1px solid #fcd34d',
+    border: '2px solid #fcd34d',
     borderRadius: '8px',
-    padding: '16px',
+    padding: '20px',
   },
   infoTitle: {
     fontSize: '16px',
-    fontWeight: '600',
+    fontWeight: '700',
     color: '#92400e',
-    marginBottom: '8px',
+    marginBottom: '12px',
   },
   list: {
     fontSize: '14px',
     color: '#78350f',
     paddingLeft: '20px',
     margin: 0,
+    lineHeight: '1.8',
   },
   header: {
     background: 'white',
-    borderRadius: '12px',
-    boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-    padding: '24px',
+    borderRadius: '16px',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+    padding: '28px',
     marginBottom: '24px',
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: '16px',
   },
   dashboardTitle: {
-    fontSize: '28px',
+    fontSize: '32px',
     fontWeight: 'bold',
     color: '#1f2937',
     margin: 0,
@@ -345,43 +433,91 @@ const styles = {
   dashboardSubtitle: {
     color: '#6b7280',
     margin: '4px 0 0 0',
+    fontSize: '14px',
   },
   refreshButton: {
-    background: '#2563eb',
+    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
     color: 'white',
-    padding: '10px 20px',
+    padding: '12px 24px',
     borderRadius: '8px',
     border: 'none',
     cursor: 'pointer',
     fontSize: '14px',
+    fontWeight: '600',
+    transition: 'transform 0.2s',
   },
   logoutButton: {
     background: '#ef4444',
     color: 'white',
-    padding: '10px 20px',
+    padding: '12px 24px',
     borderRadius: '8px',
     border: 'none',
     cursor: 'pointer',
     fontSize: '14px',
+    fontWeight: '600',
+    transition: 'transform 0.2s',
   },
   errorBox: {
     background: '#fef2f2',
-    border: '1px solid #fecaca',
-    borderRadius: '8px',
-    padding: '16px',
+    border: '2px solid #fecaca',
+    borderRadius: '12px',
+    padding: '20px',
     marginBottom: '24px',
     color: '#991b1b',
+    fontSize: '15px',
   },
   loadingBox: {
     background: 'white',
-    borderRadius: '12px',
-    boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-    padding: '48px',
+    borderRadius: '16px',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+    padding: '60px',
     textAlign: 'center',
   },
+  spinner: {
+    width: '50px',
+    height: '50px',
+    margin: '0 auto 20px',
+    border: '4px solid #e5e7eb',
+    borderTop: '4px solid #667eea',
+    borderRadius: '50%',
+    animation: 'spin 1s linear infinite',
+  },
   loadingText: {
+    color: '#1f2937',
+    fontSize: '18px',
+    fontWeight: '600',
+    marginBottom: '8px',
+  },
+  loadingHint: {
     color: '#6b7280',
-    fontSize: '16px',
+    fontSize: '14px',
+  },
+  statsBar: {
+    background: 'white',
+    borderRadius: '12px',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+    padding: '20px',
+    marginBottom: '24px',
+    display: 'flex',
+    justifyContent: 'space-around',
+    flexWrap: 'wrap',
+    gap: '16px',
+  },
+  statsItem: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: '4px',
+  },
+  statsLabel: {
+    fontSize: '13px',
+    color: '#6b7280',
+    fontWeight: '500',
+  },
+  statsValue: {
+    fontSize: '24px',
+    fontWeight: 'bold',
+    color: '#1f2937',
   },
   kpiGrid: {
     display: 'grid',
@@ -391,21 +527,28 @@ const styles = {
   },
   kpiCard: {
     background: 'white',
-    borderRadius: '12px',
-    boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-    padding: '24px',
+    borderRadius: '16px',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+    padding: '28px',
+    transition: 'transform 0.3s',
+  },
+  kpiIcon: {
+    fontSize: '32px',
+    marginBottom: '8px',
   },
   kpiLabel: {
     color: '#6b7280',
     fontSize: '14px',
-    margin: '0 0 8px 0',
-    fontWeight: '500',
+    margin: '0 0 12px 0',
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: '0.5px',
   },
   kpiValue: {
-    fontSize: '32px',
+    fontSize: '36px',
     fontWeight: 'bold',
     color: '#1f2937',
-    margin: '0 0 4px 0',
+    margin: '0 0 8px 0',
   },
   kpiHint: {
     fontSize: '12px',
@@ -415,53 +558,85 @@ const styles = {
   adsGrid: {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-    gap: '20px',
+    gap: '24px',
   },
   adCard: {
     background: 'white',
-    borderRadius: '12px',
-    boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+    borderRadius: '16px',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
     overflow: 'hidden',
+    transition: 'transform 0.3s, box-shadow 0.3s',
   },
   adImage: {
     width: '100%',
-    height: '200px',
+    height: '220px',
     objectFit: 'cover',
   },
   adImagePlaceholder: {
     width: '100%',
-    height: '200px',
-    background: '#e5e7eb',
+    height: '220px',
+    background: 'linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%)',
     display: 'flex',
+    flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    fontSize: '14px',
+    gap: '8px',
+  },
+  placeholderIcon: {
+    fontSize: '48px',
+    opacity: 0.5,
+  },
+  placeholderText: {
+    fontSize: '13px',
     color: '#6b7280',
+    fontWeight: '500',
   },
   adContent: {
-    padding: '16px',
+    padding: '20px',
+  },
+  adHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: '16px',
+    gap: '12px',
   },
   adTitle: {
-    fontSize: '16px',
-    fontWeight: '600',
+    fontSize: '17px',
+    fontWeight: '700',
     color: '#1f2937',
-    marginBottom: '12px',
+    margin: 0,
+    flex: 1,
+    lineHeight: '1.4',
+  },
+  statusBadge: {
+    padding: '6px 12px',
+    borderRadius: '6px',
+    fontSize: '11px',
+    color: 'white',
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: '0.5px',
+    whiteSpace: 'nowrap',
   },
   adStats: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '6px',
+    gap: '10px',
   },
   adStat: {
     display: 'flex',
     justifyContent: 'space-between',
     fontSize: '14px',
+    padding: '8px 0',
+    borderBottom: '1px solid #f3f4f6',
   },
   adStatLabel: {
     color: '#6b7280',
+    fontWeight: '500',
   },
   adStatValue: {
-    fontWeight: '500',
+    fontWeight: '600',
     color: '#1f2937',
   },
 };
