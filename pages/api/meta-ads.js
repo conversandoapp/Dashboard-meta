@@ -197,19 +197,3 @@ export default async function handler(req, res) {
     });
   }
 }
-```
-
----
-
-## 📊 CÓMO VER LOS LOGS:
-
-Después de actualizar el código:
-
-1. Ve a **Render.com → Tu servicio**
-2. Click en la pestaña **"Logs"**
-3. Recarga tu dashboard y presiona "Actualizar"
-4. En los logs verás mensajes como:
-```
-   Fetching creative for ad 123456...
-   Creative data for 123456: {...}
-   Total ads with images: 2/5
