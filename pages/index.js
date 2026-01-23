@@ -77,7 +77,6 @@ export default function MetaAdsDashboard() {
         text: `✅ ${data.message}`,
       });
 
-      // Limpiar mensaje después de 5 segundos
       setTimeout(() => setSyncMessage(null), 5000);
 
     } catch (err) {
@@ -117,30 +116,21 @@ export default function MetaAdsDashboard() {
 
   const getStatusColor = (status) => {
     switch(status) {
-      case 'ACTIVE':
-        return '#10b981';
-      case 'PAUSED':
-        return '#f59e0b';
+      case 'ACTIVE': return '#10b981';
+      case 'PAUSED': return '#f59e0b';
       case 'DELETED':
-      case 'ARCHIVED':
-        return '#ef4444';
-      default:
-        return '#6b7280';
+      case 'ARCHIVED': return '#ef4444';
+      default: return '#6b7280';
     }
   };
 
   const getStatusText = (status) => {
     switch(status) {
-      case 'ACTIVE':
-        return 'ACTIVO';
-      case 'PAUSED':
-        return 'PAUSADO';
-      case 'DELETED':
-        return 'ELIMINADO';
-      case 'ARCHIVED':
-        return 'ARCHIVADO';
-      default:
-        return status || 'DESCONOCIDO';
+      case 'ACTIVE': return 'ACTIVO';
+      case 'PAUSED': return 'PAUSADO';
+      case 'DELETED': return 'ELIMINADO';
+      case 'ARCHIVED': return 'ARCHIVADO';
+      default: return status || 'DESCONOCIDO';
     }
   };
 
@@ -160,9 +150,7 @@ export default function MetaAdsDashboard() {
               placeholder="EAABwzLixnjY..."
               style={styles.input}
             />
-            <p style={styles.hint}>
-              Obtenlo en: developers.facebook.com/tools/explorer/
-            </p>
+            <p style={styles.hint}>Obtenlo en: developers.facebook.com/tools/explorer/</p>
           </div>
           
           <div style={styles.formGroup}>
@@ -174,15 +162,10 @@ export default function MetaAdsDashboard() {
               placeholder="123456789"
               style={styles.input}
             />
-            <p style={styles.hint}>
-              Encuéntralo en Meta Business Suite → Configuración
-            </p>
+            <p style={styles.hint}>Encuéntralo en Meta Business Suite → Configuración</p>
           </div>
 
-          <button
-            onClick={() => setIsConfigured(true)}
-            style={styles.button}
-          >
+          <button onClick={() => setIsConfigured(true)} style={styles.button}>
             Conectar Dashboard
           </button>
 
@@ -205,7 +188,7 @@ export default function MetaAdsDashboard() {
       <div style={styles.header}>
         <div>
           <h1 style={styles.dashboardTitle}>📊 Dashboard Meta Ads</h1>
-          <p style={styles.dashboardSubtitle}>Monitoreo completo de campañas (activas e inactivas)</p>
+          <p style={styles.dashboardSubtitle}>Monitoreo completo de campañas</p>
         </div>
         <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
           <button onClick={fetchMetaAdsData} disabled={loading} style={styles.refreshButton}>
@@ -235,13 +218,13 @@ export default function MetaAdsDashboard() {
           border: syncMessage.type === 'success' ? '2px solid #86efac' : '2px solid #fecaca',
           color: syncMessage.type === 'success' ? '#166534' : '#991b1b',
         }}>
-          <p>{syncMessage.text}</p>
+          <p style={{ margin: 0 }}>{syncMessage.text}</p>
         </div>
       )}
 
       {error && (
         <div style={styles.errorBox}>
-          <p>⚠️ {error}</p>
+          <p style={{ margin: 0 }}>⚠️ {error}</p>
         </div>
       )}
 
@@ -253,7 +236,6 @@ export default function MetaAdsDashboard() {
         </div>
       ) : totals ? (
         <>
-          {/* KPIs */}
           <div style={styles.kpiGrid}>
             <div style={styles.kpiCard}>
               <div style={styles.kpiIcon}>👥</div>
@@ -281,7 +263,6 @@ export default function MetaAdsDashboard() {
             </div>
           </div>
 
-          {/* Contador de anuncios */}
           <div style={styles.statsBar}>
             <div style={styles.statsItem}>
               <span style={styles.statsLabel}>Total de anuncios:</span>
@@ -307,7 +288,6 @@ export default function MetaAdsDashboard() {
             </div>
           </div>
 
-          {/* Anuncios */}
           <div style={styles.adsGrid}>
             {metaData.map((ad, index) => (
               <div key={index} style={styles.adCard}>
@@ -415,7 +395,6 @@ const styles = {
     borderRadius: '8px',
     fontSize: '14px',
     boxSizing: 'border-box',
-    transition: 'border-color 0.3s',
   },
   hint: {
     fontSize: '12px',
@@ -433,7 +412,6 @@ const styles = {
     fontWeight: '600',
     cursor: 'pointer',
     marginBottom: '28px',
-    transition: 'transform 0.2s',
   },
   infoBox: {
     background: '#fef3c7',
@@ -486,7 +464,6 @@ const styles = {
     cursor: 'pointer',
     fontSize: '14px',
     fontWeight: '600',
-    transition: 'transform 0.2s',
   },
   syncButton: {
     background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
@@ -494,10 +471,8 @@ const styles = {
     padding: '12px 24px',
     borderRadius: '8px',
     border: 'none',
-    cursor: 'pointer',
     fontSize: '14px',
     fontWeight: '600',
-    transition: 'transform 0.2s',
   },
   logoutButton: {
     background: '#ef4444',
@@ -508,7 +483,6 @@ const styles = {
     cursor: 'pointer',
     fontSize: '14px',
     fontWeight: '600',
-    transition: 'transform 0.2s',
   },
   messageBox: {
     borderRadius: '12px',
@@ -590,7 +564,6 @@ const styles = {
     borderRadius: '16px',
     boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
     padding: '28px',
-    transition: 'transform 0.3s',
   },
   kpiIcon: {
     fontSize: '32px',
@@ -625,7 +598,6 @@ const styles = {
     borderRadius: '16px',
     boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
     overflow: 'hidden',
-    transition: 'transform 0.3s, box-shadow 0.3s',
   },
   adImage: {
     width: '100%',
