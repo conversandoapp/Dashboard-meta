@@ -7,6 +7,8 @@ export default function MetaAdsDashboard() {
   const [metaToken, setMetaToken] = useState('');
   const [adAccountId, setAdAccountId] = useState('');
   const [isConfigured, setIsConfigured] = useState(false);
+  const [syncLoading, setSyncLoading] = useState(false);
+  const [syncMessage, setSyncMessage] = useState(null);
 
   const fetchMetaAdsData = async () => {
     if (!metaToken || !adAccountId) {
@@ -37,11 +39,6 @@ export default function MetaAdsDashboard() {
       setMetaData(data.data);
       setLoading(false);
       
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('meta_token', metaToken);
-        localStorage.setItem('ad_account_id', adAccountId);
-      }
-      
     } catch (err) {
       console.error('Error:', err);
       setError(err.message);
@@ -49,24 +46,50 @@ export default function MetaAdsDashboard() {
     }
   };
 
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const savedToken = localStorage.getItem('meta_token');
-      const savedAccountId = localStorage.getItem('ad_account_id');
-      
-      if (savedToken && savedAccountId) {
-        setMetaToken(savedToken);
-        setAdAccountId(savedAccountId);
-        setIsConfigured(true);
-      }
+  const syncToGoogleSheets = async () => {
+    if (!metaData || metaData.length === 0) {
+      setSyncMessage({ type: 'error', text: 'No hay datos para sincronizar' });
+      return;
     }
-  }, []);
 
-  useEffect(() => {
-    if (isConfigured && metaToken && adAccountId) {
-      fetchMetaAdsData();
+    setSyncLoading(true);
+    setSyncMessage(null);
+
+    try {
+      const response = await fetch('/api/sync-to-sheets', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          adsData: metaData,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.details || data.error || 'Error al sincronizar');
+      }
+
+      setSyncMessage({
+        type: 'success',
+        text: `✅ ${data.message}`,
+      });
+
+      // Limpiar mensaje después de 5 segundos
+      setTimeout(() => setSyncMessage(null), 5000);
+
+    } catch (err) {
+      console.error('Error al sincronizar:', err);
+      setSyncMessage({
+        type: 'error',
+        text: `❌ Error: ${err.message}`,
+      });
+    } finally {
+      setSyncLoading(false);
     }
-  }, [isConfigured]);
+  };
 
   const calculateTotals = () => {
     if (!metaData || metaData.length === 0) return null;
@@ -85,14 +108,11 @@ export default function MetaAdsDashboard() {
   const totals = calculateTotals();
 
   const handleLogout = () => {
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('meta_token');
-      localStorage.removeItem('ad_account_id');
-    }
     setIsConfigured(false);
     setMetaData(null);
     setMetaToken('');
     setAdAccountId('');
+    setSyncMessage(null);
   };
 
   const getStatusColor = (status) => {
@@ -167,7 +187,7 @@ export default function MetaAdsDashboard() {
           </button>
 
           <div style={styles.infoBox}>
-            <h3 style={styles.infoTitle}>📝 Instrucciones rápidas:</h3>
+            <h3 style={styles.infoTitle}>📋 Instrucciones rápidas:</h3>
             <ol style={styles.list}>
               <li>Ve a developers.facebook.com/tools/explorer/</li>
               <li>Selecciona tu app y permisos: ads_read, ads_management</li>
@@ -187,15 +207,37 @@ export default function MetaAdsDashboard() {
           <h1 style={styles.dashboardTitle}>📊 Dashboard Meta Ads</h1>
           <p style={styles.dashboardSubtitle}>Monitoreo completo de campañas (activas e inactivas)</p>
         </div>
-        <div style={{ display: 'flex', gap: '12px' }}>
+        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
           <button onClick={fetchMetaAdsData} disabled={loading} style={styles.refreshButton}>
             {loading ? '⏳ Cargando...' : '🔄 Actualizar'}
+          </button>
+          <button 
+            onClick={syncToGoogleSheets} 
+            disabled={syncLoading || !metaData}
+            style={{
+              ...styles.syncButton,
+              opacity: syncLoading || !metaData ? 0.6 : 1,
+              cursor: syncLoading || !metaData ? 'not-allowed' : 'pointer',
+            }}
+          >
+            {syncLoading ? '⏳ Sincronizando...' : '📊 Sincronizar a Sheets'}
           </button>
           <button onClick={handleLogout} style={styles.logoutButton}>
             🚪 Salir
           </button>
         </div>
       </div>
+
+      {syncMessage && (
+        <div style={{
+          ...styles.messageBox,
+          background: syncMessage.type === 'success' ? '#f0fdf4' : '#fef2f2',
+          border: syncMessage.type === 'success' ? '2px solid #86efac' : '2px solid #fecaca',
+          color: syncMessage.type === 'success' ? '#166534' : '#991b1b',
+        }}>
+          <p>{syncMessage.text}</p>
+        </div>
+      )}
 
       {error && (
         <div style={styles.errorBox}>
@@ -446,6 +488,17 @@ const styles = {
     fontWeight: '600',
     transition: 'transform 0.2s',
   },
+  syncButton: {
+    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+    color: 'white',
+    padding: '12px 24px',
+    borderRadius: '8px',
+    border: 'none',
+    cursor: 'pointer',
+    fontSize: '14px',
+    fontWeight: '600',
+    transition: 'transform 0.2s',
+  },
   logoutButton: {
     background: '#ef4444',
     color: 'white',
@@ -456,6 +509,13 @@ const styles = {
     fontSize: '14px',
     fontWeight: '600',
     transition: 'transform 0.2s',
+  },
+  messageBox: {
+    borderRadius: '12px',
+    padding: '20px',
+    marginBottom: '24px',
+    fontSize: '15px',
+    fontWeight: '500',
   },
   errorBox: {
     background: '#fef2f2',
