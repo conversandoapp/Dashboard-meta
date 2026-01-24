@@ -121,26 +121,28 @@ export default function MetaAdsDashboard() {
 
   return (
     <div style={styles.container}>
-      <div style={styles.header}>
-        <div>
-          <h1 style={styles.dashboardTitle}>📊 Dashboard Meta Ads</h1>
-          <p style={styles.dashboardSubtitle}>Monitoreo completo de campañas (activas e inactivas)</p>
-        </div>
-        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-          <button onClick={fetchMetaAdsData} disabled={loading} style={styles.refreshButton}>
-            {loading ? '⏳ Cargando...' : '🔄 Actualizar'}
-          </button>
-          <button 
-            onClick={syncToGoogleSheets} 
-            disabled={syncLoading || !metaData}
-            style={{
-              ...styles.syncButton,
-              opacity: syncLoading || !metaData ? 0.6 : 1,
-              cursor: syncLoading || !metaData ? 'not-allowed' : 'pointer',
-            }}
-          >
-            {syncLoading ? '⏳ Sincronizando...' : '📊 Sincronizar a Sheets'}
-          </button>
+      <div style={styles.headerContainer}>
+        <div style={styles.header}>
+          <div>
+            <h1 style={styles.dashboardTitle}>📊 Dashboard Meta Ads</h1>
+            <p style={styles.dashboardSubtitle}>Monitoreo completo de campañas (activas e inactivas)</p>
+          </div>
+          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+            <button onClick={fetchMetaAdsData} disabled={loading} style={styles.refreshButton}>
+              {loading ? '⏳ Cargando...' : '🔄 Actualizar'}
+            </button>
+            <button 
+              onClick={syncToGoogleSheets} 
+              disabled={syncLoading || !metaData}
+              style={{
+                ...styles.syncButton,
+                opacity: syncLoading || !metaData ? 0.6 : 1,
+                cursor: syncLoading || !metaData ? 'not-allowed' : 'pointer',
+              }}
+            >
+              {syncLoading ? '⏳ Sincronizando...' : '📊 Sincronizar a Sheets'}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -292,27 +294,28 @@ const styles = {
     minHeight: '100vh',
     background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
     padding: '24px',
+    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+  },
+  headerContainer: {
+    marginBottom: '24px',
   },
   header: {
-    background: 'white',
-    borderRadius: '16px',
-    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-    padding: '28px',
-    marginBottom: '24px',
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
     flexWrap: 'wrap',
     gap: '16px',
+    marginBottom: '20px',
   },
   dashboardTitle: {
     fontSize: '32px',
     fontWeight: 'bold',
-    color: '#1f2937',
+    color: 'white',
     margin: 0,
+    textShadow: '0 2px 4px rgba(0,0,0,0.1)',
   },
   dashboardSubtitle: {
-    color: '#6b7280',
+    color: 'rgba(255, 255, 255, 0.9)',
     margin: '4px 0 0 0',
     fontSize: '14px',
   },
