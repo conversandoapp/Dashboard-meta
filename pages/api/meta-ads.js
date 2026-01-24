@@ -52,7 +52,7 @@ export default async function handler(req, res) {
       
       if (adsData.data && adsData.data.length > 0) {
         const adsWithInsights = await Promise.all(
-          adsData.data.slice(0, 20).map(async (ad) => {
+          adsData.data.map(async (ad) => {  // ✅ Cambio: Removido .slice(0, 20) para procesar TODAS las campañas
             try {
               const insightUrl = `https://graph.facebook.com/v21.0/${ad.id}/insights?fields=reach,impressions,cpc,spend,clicks,ctr&time_range=${encodeURIComponent(timeRange)}&access_token=${token}`;
               const insightResponse = await fetch(insightUrl);
