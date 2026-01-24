@@ -4,34 +4,23 @@ export default function MetaAdsDashboard() {
   const [metaData, setMetaData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [metaToken, setMetaToken] = useState('');
-  const [adAccountId, setAdAccountId] = useState('');
-  const [isConfigured, setIsConfigured] = useState(false);
   const [syncLoading, setSyncLoading] = useState(false);
   const [syncMessage, setSyncMessage] = useState(null);
 
   const fetchMetaAdsData = async () => {
-    if (!metaToken || !adAccountId) {
-      setError('Por favor ingresa tu Access Token y Ad Account ID');
-      return;
-    }
-
     setLoading(true);
     setError(null);
 
     try {
-      const response = await fetch(
-        `/api/meta-ads?token=${encodeURIComponent(metaToken)}&accountId=${encodeURIComponent(adAccountId)}`
-      );
-      
+      const response = await fetch('/api/meta-ads');
       const data = await response.json();
       
       if (!response.ok) {
-        throw new Error(data.error || 'Error al obtener datos');
+        throw new Error(data.error || data.message || 'Error al obtener datos');
       }
       
       if (!data.data || data.data.length === 0) {
-        setError(data.message || 'No se encontraron anuncios. Verifica tu Account ID y que tengas campañas.');
+        setError('No se encontraron anuncios. Verifica tu configuración en Render.');
         setLoading(false);
         return;
       }
@@ -90,6 +79,10 @@ export default function MetaAdsDashboard() {
     }
   };
 
+  useEffect(() => {
+    fetchMetaAdsData();
+  }, []);
+
   const calculateTotals = () => {
     if (!metaData || metaData.length === 0) return null;
 
@@ -105,14 +98,6 @@ export default function MetaAdsDashboard() {
   };
 
   const totals = calculateTotals();
-
-  const handleLogout = () => {
-    setIsConfigured(false);
-    setMetaData(null);
-    setMetaToken('');
-    setAdAccountId('');
-    setSyncMessage(null);
-  };
 
   const getStatusColor = (status) => {
     switch(status) {
@@ -134,61 +119,12 @@ export default function MetaAdsDashboard() {
     }
   };
 
-  if (!isConfigured) {
-    return (
-      <div style={styles.container}>
-        <div style={styles.configCard}>
-          <h1 style={styles.title}>🎯 Dashboard Meta Ads</h1>
-          <p style={styles.subtitle}>Configura tus credenciales para comenzar</p>
-          
-          <div style={styles.formGroup}>
-            <label style={styles.label}>Meta Access Token</label>
-            <input
-              type="password"
-              value={metaToken}
-              onChange={(e) => setMetaToken(e.target.value)}
-              placeholder="EAABwzLixnjY..."
-              style={styles.input}
-            />
-            <p style={styles.hint}>Obtenlo en: developers.facebook.com/tools/explorer/</p>
-          </div>
-          
-          <div style={styles.formGroup}>
-            <label style={styles.label}>Ad Account ID</label>
-            <input
-              type="text"
-              value={adAccountId}
-              onChange={(e) => setAdAccountId(e.target.value)}
-              placeholder="123456789"
-              style={styles.input}
-            />
-            <p style={styles.hint}>Encuéntralo en Meta Business Suite → Configuración</p>
-          </div>
-
-          <button onClick={() => setIsConfigured(true)} style={styles.button}>
-            Conectar Dashboard
-          </button>
-
-          <div style={styles.infoBox}>
-            <h3 style={styles.infoTitle}>📋 Instrucciones rápidas:</h3>
-            <ol style={styles.list}>
-              <li>Ve a developers.facebook.com/tools/explorer/</li>
-              <li>Selecciona tu app y permisos: ads_read, ads_management</li>
-              <li>Genera el token y cópialo</li>
-              <li>Obtén tu Account ID en business.facebook.com</li>
-            </ol>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div style={styles.container}>
       <div style={styles.header}>
         <div>
           <h1 style={styles.dashboardTitle}>📊 Dashboard Meta Ads</h1>
-          <p style={styles.dashboardSubtitle}>Monitoreo completo de campañas</p>
+          <p style={styles.dashboardSubtitle}>Monitoreo completo de campañas (activas e inactivas)</p>
         </div>
         <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
           <button onClick={fetchMetaAdsData} disabled={loading} style={styles.refreshButton}>
@@ -204,9 +140,6 @@ export default function MetaAdsDashboard() {
             }}
           >
             {syncLoading ? '⏳ Sincronizando...' : '📊 Sincronizar a Sheets'}
-          </button>
-          <button onClick={handleLogout} style={styles.logoutButton}>
-            🚪 Salir
           </button>
         </div>
       </div>
@@ -225,6 +158,9 @@ export default function MetaAdsDashboard() {
       {error && (
         <div style={styles.errorBox}>
           <p style={{ margin: 0 }}>⚠️ {error}</p>
+          <p style={{ fontSize: '13px', marginTop: '8px', margin: '8px 0 0 0' }}>
+            Asegúrate de haber configurado las variables de entorno en Render.
+          </p>
         </div>
       )}
 
@@ -357,81 +293,6 @@ const styles = {
     background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
     padding: '24px',
   },
-  configCard: {
-    maxWidth: '600px',
-    margin: '60px auto',
-    background: 'white',
-    borderRadius: '16px',
-    boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
-    padding: '48px',
-  },
-  title: {
-    fontSize: '36px',
-    fontWeight: 'bold',
-    color: '#1f2937',
-    marginBottom: '8px',
-    textAlign: 'center',
-  },
-  subtitle: {
-    color: '#6b7280',
-    textAlign: 'center',
-    marginBottom: '40px',
-    fontSize: '16px',
-  },
-  formGroup: {
-    marginBottom: '28px',
-  },
-  label: {
-    display: 'block',
-    fontSize: '14px',
-    fontWeight: '600',
-    color: '#374151',
-    marginBottom: '8px',
-  },
-  input: {
-    width: '100%',
-    padding: '14px 16px',
-    border: '2px solid #e5e7eb',
-    borderRadius: '8px',
-    fontSize: '14px',
-    boxSizing: 'border-box',
-  },
-  hint: {
-    fontSize: '12px',
-    color: '#6b7280',
-    marginTop: '6px',
-  },
-  button: {
-    width: '100%',
-    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-    color: 'white',
-    padding: '16px',
-    borderRadius: '8px',
-    border: 'none',
-    fontSize: '16px',
-    fontWeight: '600',
-    cursor: 'pointer',
-    marginBottom: '28px',
-  },
-  infoBox: {
-    background: '#fef3c7',
-    border: '2px solid #fcd34d',
-    borderRadius: '8px',
-    padding: '20px',
-  },
-  infoTitle: {
-    fontSize: '16px',
-    fontWeight: '700',
-    color: '#92400e',
-    marginBottom: '12px',
-  },
-  list: {
-    fontSize: '14px',
-    color: '#78350f',
-    paddingLeft: '20px',
-    margin: 0,
-    lineHeight: '1.8',
-  },
   header: {
     background: 'white',
     borderRadius: '16px',
@@ -464,6 +325,7 @@ const styles = {
     cursor: 'pointer',
     fontSize: '14px',
     fontWeight: '600',
+    transition: 'transform 0.2s',
   },
   syncButton: {
     background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
@@ -473,16 +335,7 @@ const styles = {
     border: 'none',
     fontSize: '14px',
     fontWeight: '600',
-  },
-  logoutButton: {
-    background: '#ef4444',
-    color: 'white',
-    padding: '12px 24px',
-    borderRadius: '8px',
-    border: 'none',
-    cursor: 'pointer',
-    fontSize: '14px',
-    fontWeight: '600',
+    transition: 'transform 0.2s',
   },
   messageBox: {
     borderRadius: '12px',
@@ -564,6 +417,7 @@ const styles = {
     borderRadius: '16px',
     boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
     padding: '28px',
+    transition: 'transform 0.3s',
   },
   kpiIcon: {
     fontSize: '32px',
@@ -598,6 +452,7 @@ const styles = {
     borderRadius: '16px',
     boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
     overflow: 'hidden',
+    transition: 'transform 0.3s, box-shadow 0.3s',
   },
   adImage: {
     width: '100%',
