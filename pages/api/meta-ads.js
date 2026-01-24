@@ -9,11 +9,14 @@ export default async function handler(req, res) {
     return;
   }
 
-  const { token, accountId } = req.query;
+  // Leer credenciales desde variables de entorno
+  const token = process.env.META_ACCESS_TOKEN;
+  const accountId = process.env.META_AD_ACCOUNT_ID;
   
   if (!token || !accountId) {
-    return res.status(400).json({ 
-      error: 'Faltan parámetros: token y accountId son requeridos' 
+    return res.status(500).json({ 
+      error: 'Configuración incompleta',
+      message: 'META_ACCESS_TOKEN y META_AD_ACCOUNT_ID deben estar configurados en las variables de entorno de Render'
     });
   }
 
