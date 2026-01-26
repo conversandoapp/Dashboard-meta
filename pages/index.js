@@ -25,7 +25,28 @@ export default function MetaAdsDashboard() {
         return;
       }
       
-      setMetaData(data.data);
+      // ✅ DEBUG: Ver qué campañas llegan
+      console.log('📊 Total campañas recibidas:', data.data.length);
+      console.log('Campañas:', data.data.map(ad => ({
+        nombre: ad.ad_name,
+        estado: ad.effective_status,
+        fecha: ad.created_time || ad.date_start,
+        id: ad.ad_id
+      })));
+      
+      // ✅ ORDENAR: Más reciente primero (izquierda a derecha)
+      const sortedData = [...data.data].sort((a, b) => {
+        const dateA = new Date(a.created_time || a.date_start || a.updated_time || 0);
+        const dateB = new Date(b.created_time || b.date_start || b.updated_time || 0);
+        return dateB - dateA; // Descendente (más reciente primero)
+      });
+      
+      console.log('✅ Campañas ordenadas:', sortedData.map(ad => ({
+        nombre: ad.ad_name,
+        fecha: ad.created_time || ad.date_start
+      })));
+      
+      setMetaData(sortedData);
       setLoading(false);
       
     } catch (err) {
