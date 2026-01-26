@@ -23,10 +23,17 @@ export default async function handler(req, res) {
   try {
     const cleanAccountId = accountId.replace(/^act_/i, '');
     
+    // ✅ CORREGIDO: Usar fecha actual en lugar de fecha fija
+    const today = new Date();
+    const twoYearsAgo = new Date(today);
+    twoYearsAgo.setFullYear(today.getFullYear() - 2);
+    
     const timeRange = JSON.stringify({
-      since: '2023-01-01',
-      until: '2025-01-13'
+      since: twoYearsAgo.toISOString().split('T')[0],
+      until: today.toISOString().split('T')[0]
     });
+    
+    console.log('📅 Time range:', timeRange);
     
     const url = `https://graph.facebook.com/v21.0/act_${cleanAccountId}/insights?fields=reach,impressions,cpc,spend,clicks,ctr,ad_id,ad_name,date_start,date_stop&level=ad&time_range=${encodeURIComponent(timeRange)}&access_token=${token}&limit=100`;
     
