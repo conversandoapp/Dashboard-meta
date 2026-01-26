@@ -26,7 +26,7 @@ export default async function handler(req, res) {
     // ✅ CORREGIDO: Usar fecha actual en lugar de fecha fija
     const today = new Date();
     const twoYearsAgo = new Date(today);
-    twoYearsAgo.setFullYear(today.getFullYear() - 5);
+    twoYearsAgo.setFullYear(today.getFullYear() - 3);
     
     const timeRange = JSON.stringify({
       since: twoYearsAgo.toISOString().split('T')[0],
