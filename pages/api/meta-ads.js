@@ -26,7 +26,7 @@ export default async function handler(req, res) {
     // ✅ CORREGIDO: Usar fecha actual en lugar de fecha fija
     const today = new Date();
     const twoYearsAgo = new Date(today);
-    twoYearsAgo.setFullYear(today.getFullYear() - 2);
+    twoYearsAgo.setFullYear(today.getFullYear() - 5);
     
     const timeRange = JSON.stringify({
       since: twoYearsAgo.toISOString().split('T')[0],
@@ -35,7 +35,7 @@ export default async function handler(req, res) {
     
     console.log('📅 Time range:', timeRange);
     
-    const url = `https://graph.facebook.com/v21.0/act_${cleanAccountId}/insights?fields=reach,impressions,cpc,spend,clicks,ctr,ad_id,ad_name,date_start,date_stop&level=ad&time_range=${encodeURIComponent(timeRange)}&access_token=${token}&limit=100`;
+    const url = `https://graph.facebook.com/v21.0/act_${cleanAccountId}/insights?fields=reach,impressions,cpc,spend,clicks,ctr,ad_id,ad_name,date_start,date_stop&level=ad&time_range=${encodeURIComponent(timeRange)}&access_token=${token}&limit=50`;
     
     console.log('Fetching Meta Ads data (including inactive)...');
     
@@ -53,9 +53,12 @@ export default async function handler(req, res) {
     if (!data.data || data.data.length === 0) {
       console.log('No insights found, fetching ads directly...');
       
-      const adsUrl = `https://graph.facebook.com/v21.0/act_${cleanAccountId}/ads?fields=id,name,status,effective_status,created_time,updated_time&limit=100&access_token=${token}`;
+      // ✅ MEJORADO: Incluir TODAS las campañas sin importar el estado
+      const adsUrl = `https://graph.facebook.com/v21.0/act_${cleanAccountId}/ads?fields=id,name,status,effective_status,created_time,updated_time&limit=50&access_token=${token}`;
       const adsResponse = await fetch(adsUrl);
       const adsData = await adsResponse.json();
+      
+      console.log(`📊 Total ads fetched: ${adsData.data?.length || 0}`);
       
       if (adsData.data && adsData.data.length > 0) {
         const adsWithInsights = await Promise.all(
@@ -95,6 +98,7 @@ export default async function handler(req, res) {
                 ad_name: ad.name,
                 status: ad.status,
                 effective_status: ad.effective_status,
+                created_time: ad.created_time,  // ✅ Incluir fecha de creación
                 reach: insight.reach || 0,
                 impressions: insight.impressions || 0,
                 cpc: insight.cpc || 0,
@@ -111,6 +115,7 @@ export default async function handler(req, res) {
                 ad_name: ad.name,
                 status: ad.status,
                 effective_status: ad.effective_status,
+                created_time: ad.created_time,  // ✅ Incluir fecha de creación
                 reach: 0,
                 impressions: 0,
                 cpc: 0,
@@ -177,6 +182,7 @@ export default async function handler(req, res) {
             image_url: imageUrl,
             status: adDetails.status || 'UNKNOWN',
             effective_status: adDetails.effective_status || 'UNKNOWN',
+            created_time: ad.date_start || adDetails.created_time,  // ✅ Incluir fecha
             has_creative: !!imageUrl,
           };
         } catch (err) {
@@ -185,6 +191,7 @@ export default async function handler(req, res) {
             ...ad, 
             image_url: null, 
             status: 'UNKNOWN',
+            created_time: ad.date_start,  // ✅ Incluir fecha
             has_creative: false,
           };
         }
