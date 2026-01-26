@@ -25,7 +25,7 @@ export default async function handler(req, res) {
     // Usar 5 años atrás para asegurar que capture todas las campañas
     const today = new Date();
     const fiveYearsAgo = new Date(today);
-    fiveYearsAgo.setFullYear(today.getFullYear() - 5);
+    fiveYearsAgo.setFullYear(today.getFullYear() - 3);
     
     const timeRange = JSON.stringify({
       since: fiveYearsAgo.toISOString().split('T')[0],
